@@ -29,7 +29,7 @@ func mainLoop(base Resource, projectPath string, client *http.Client) {
 				urlSB.WriteString(base.Path)
 			// select: create a resource
 			case choice == len(curr.Resources) + len(curr.Requests):
-				child := createResource(curr)
+				child := createResource()
 				curr.Resources = append(curr.Resources, child)
 				writeProject(base, projectPath)
 			// select: create a request
@@ -49,6 +49,10 @@ func main() {
 
 	projectPath := getProjectPath(projectName)
 	base := readProject(projectPath)
+
+	if base.Name == "" {
+		return
+	}
 
 	client := &http.Client{}
 	mainLoop(base, projectPath, client)

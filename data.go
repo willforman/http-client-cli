@@ -52,7 +52,7 @@ func getChoice(numChoices int) int {
 	}
 }
 
-func createResource(parent *Resource) Resource {
+func createResource() Resource {
 	var name string
 	println("Name: ");
 	_, err := fmt.Scan(&name)

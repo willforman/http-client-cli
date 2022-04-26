@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -15,10 +16,29 @@ func getProjectPath(projectName string) string {
 	return filepath.Join(home, ".config", "http-test", "projects", projectName + ".json")
 } 
 
+func createProject(projectPath string) Resource {
+	fmt.Print("No project found. Create one [y/N]? ")
+	var choice rune
+	_, err := fmt.Scanf("%c", &choice)
+	if err != nil {
+		fmt.Println(err)
+		panic(err);
+	}
+
+	if (choice != 'y') {
+		return Resource{}
+	}
+
+	base := createResource()
+	writeProject(base, projectPath)
+	return base
+}
+
 func readProject(projectPath string) Resource {
+	fmt.Println("Reading project at " + projectPath)
 	data, err := os.ReadFile(projectPath)
 	if err != nil {
-		panic("Project doesn't exist")
+		return createProject(projectPath)
 	}
 	
 	var base Resource
