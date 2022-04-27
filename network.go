@@ -4,28 +4,29 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
-func makeRequest(req Request, url string, client *http.Client) {
+func makeRequest(req Request, urlStr string, baseUrl *url.URL, client *http.Client) {
 	println(req.Name)
-	println(req.Method + " " + url)
+	println(req.Method + " " + urlStr)
 
 	var httpReq *http.Request
 	var err error
 
 	if (req.Method == "GET") {
-		httpReq, err = http.NewRequest(req.Method, url, nil)
+		httpReq, err = http.NewRequest(req.Method, urlStr, nil)
 	} else {
-			dataStr := getDataStr(req)
-			reader := strings.NewReader(dataStr)
+		dataStr := getDataStr(req)
+		reader := strings.NewReader(dataStr)
 
-			httpReq, err = http.NewRequest(
-				req.Method,
-				url, 
-				reader,
-			)
-			httpReq.Header.Set("Content-Type", "application/json")
+		httpReq, err = http.NewRequest(
+			req.Method,
+			urlStr, 
+			reader,
+		)
+		httpReq.Header.Set("Content-Type", "application/json")
 	}
 
 	if err != nil {
@@ -46,4 +47,13 @@ func makeRequest(req Request, url string, client *http.Client) {
 		panic(err)
 	}
 	fmt.Println(string(body))
+
+	// We want to save any cookies we get from the server
+	if len(resp.Cookies()) != 0 {
+		fmt.Println("Saving following cookies: ")
+		for _, cookie := range resp.Cookies() {
+			fmt.Println(cookie)
+		}
+		client.Jar.SetCookies(baseUrl, resp.Cookies()) 
+	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -16,29 +17,12 @@ func getProjectPath(projectName string) string {
 	return filepath.Join(home, ".config", "http-test", "projects", projectName + ".json")
 } 
 
-func createProject(projectPath string) Resource {
-	fmt.Print("No project found. Create one [y/N]? ")
-	var choice rune
-	_, err := fmt.Scanf("%c", &choice)
-	if err != nil {
-		fmt.Println(err)
-		panic(err);
-	}
 
-	if (choice != 'y') {
-		return Resource{}
-	}
-
-	base := createResource()
-	writeProject(base, projectPath)
-	return base
-}
-
-func readProject(projectPath string) Resource {
+func readProject(reader *bufio.Reader, projectPath string) Resource {
 	fmt.Println("Reading project at " + projectPath)
 	data, err := os.ReadFile(projectPath)
 	if err != nil {
-		return createProject(projectPath)
+		return createProject(reader, projectPath)
 	}
 	
 	var base Resource
@@ -55,7 +39,7 @@ func writeProject(base Resource, projectPath string) {
 	if err != nil {
 		panic(err)
 	}
-	err = os.WriteFile(projectPath, data, 644)
+	err = os.WriteFile(projectPath, data, 0644)
 	if err != nil {
 		panic(err)
 	}

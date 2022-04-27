@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type Request struct {
@@ -18,19 +20,6 @@ type Resource struct {
 	Path string `json:"path"`
 	Resources []Resource `json:"resources"`
 	Requests []Request `json:"requests"`
-}
-
-func printResource(base *Resource) {
-	fmt.Println(base.Name)
-	
-	for idx, subResource := range base.Resources {
-		fmt.Printf("%d: %s\n", idx, subResource.Name)
-	} 
-	for idx, requests := range base.Requests {
-		fmt.Printf("%d: %s\n", idx + len(base.Resources), requests.Name)
-	} 
-	fmt.Printf("%d: Add sub-resource\n", len(base.Resources) + len(base.Requests))
-	fmt.Printf("%d: Add sub-request\n", len(base.Resources) + len(base.Requests) + 1)
 }
 
 func getChoice(numChoices int) int {
@@ -52,20 +41,20 @@ func getChoice(numChoices int) int {
 	}
 }
 
-func createResource() Resource {
-	var name string
+func createResource(reader *bufio.Reader) Resource {
 	println("Name: ");
-	_, err := fmt.Scan(&name)
+	name, err := reader.ReadString('\n');
 	if err != nil {
 		fmt.Println(err)
 	}
+	name = strings.TrimSuffix(name, "\n")
 
-	var path string
 	println("Path: ");
-	_, err = fmt.Scan(&path)
+	path, err := reader.ReadString('\n');
 	if err != nil {
 		fmt.Println(err)
 	}
+	path = strings.TrimSuffix(path, "\n")
 
 	return Resource{
 		Name: name,
@@ -75,20 +64,20 @@ func createResource() Resource {
 	}
 }
 
-func createRequest(parent *Resource) Request {
-	var name string
+func createRequest(reader *bufio.Reader) Request {
 	println("Name: ")
-	_, err := fmt.Scan(&name)
+	name, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
 	}
+	name = strings.TrimSuffix(name, "\n")
 
-	var path string
 	println("Path: (default = '/')")
-	_, err = fmt.Scan(&path)
+	path, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
 	}
+	path = strings.TrimSuffix(path, "\n")
 
 	var method string
 	println("Method:\n0: GET\n1: POST\n2: PUT\n3: DELETE")
@@ -127,4 +116,20 @@ func getDataStr(req Request) string {
 	return string(data)
 }
 
+func createProject(reader *bufio.Reader, projectPath string) Resource {
+	fmt.Print("No project found. Create one [y/N]? ")
+	var choice rune
+	_, err := fmt.Scanf("%c", &choice)
+	if err != nil {
+		fmt.Println(err)
+		panic(err);
+	}
 
+	if (choice != 'y') {
+		return Resource{}
+	}
+
+	base := createResource(reader)
+	writeProject(base, projectPath)
+	return base
+}
