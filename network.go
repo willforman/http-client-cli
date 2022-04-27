@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,7 +48,17 @@ func makeRequest(req Request, urlStr string, baseUrl *url.URL, client *http.Clie
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(body))
+
+	if resp.Header.Get("Content-Type") == "application/json; charset=utf-8" {
+		var bodyIndented bytes.Buffer
+		err = json.Indent(&bodyIndented, body, "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(bodyIndented.String())
+	} else {
+		fmt.Println(string(body))
+	}
 
 	// We want to save any cookies we get from the server
 	if len(resp.Cookies()) != 0 {
